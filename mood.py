@@ -1,4 +1,6 @@
 import os
+import sys
+from threading import Timer
 import time
 import RPi.GPIO as GPIO
 from RPLCD.i2c import CharLCD
@@ -31,19 +33,26 @@ client.connect()
 
 client.loop_background()
 
+def light_off(x):
+    GPIO.output(led_pins[x], False)
+
 def pressed(x):
+    global last_press
+    if time.time() - last_press < 5:
+        return
+    last_press = time.time()
     i = button_pins.index(x)
     lcd.clear()
     lcd.write_string('pressed %s' % i)
     print('button %s pressed!' % i)
     client.publish(ADAFRUIT_IO_FEED_NAME, button_values[i])
     GPIO.output(led_pins[i], True)
-    time.sleep(1)
-    GPIO.output(led_pins[i], False)
+    Timer(1, light_off, args=[i]).start()
 
 led_pins = 23, 12, 20, 19
 button_pins = 24, 16, 21, 26
 button_values = -2, -1, 1, 2
+last_press = 0
 
 PORT_EXPANDER = 'PCF8574'
 I2C_ADDRESS = 0x27
@@ -53,10 +62,15 @@ GPIO.setmode(GPIO.BCM)
 for i in range(4):
     GPIO.setup(led_pins[i], GPIO.OUT)
     GPIO.setup(button_pins[i], GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(button_pins[i], GPIO.RISING, callback=pressed, bouncetime=100)
+    GPIO.add_event_detect(button_pins[i], GPIO.FALLING, callback=pressed, bouncetime=100)
 
 lcd.clear()
 lcd.write_string('ready!')
 
 while True:
-    pass
+    try:
+        pass
+    except:
+        print('cleaning up!')
+        GPIO.cleanup()
+
