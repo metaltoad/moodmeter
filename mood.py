@@ -53,7 +53,7 @@ def pressed(x):
     client.publish(ADAFRUIT_IO_MOOD_FEED_NAME, button_values[i])
 
     humidity,temperature = dht.read_retry(dht.DHT22, 4)
-    client.publish(ADAFRUIT_IO_TEMP_FEED_NAME, termperature)
+    client.publish(ADAFRUIT_IO_TEMP_FEED_NAME, temperature)
     client.publish(ADAFRUIT_IO_HUMID_FEED_NAME, humidity)
 
     GPIO.output(led_pins[i], True)
