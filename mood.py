@@ -4,17 +4,22 @@ from threading import Timer
 import time
 import RPi.GPIO as GPIO
 from RPLCD.i2c import CharLCD
+import Adafruit_DHT as dht
 from Adafruit_IO import MQTTClient
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="./.env")
 
 ADAFRUIT_IO_USERNAME = os.getenv("ADAFRUIT_IO_USERNAME")
 ADAFRUIT_IO_KEY = os.getenv("ADAFRUIT_IO_KEY")
-ADAFRUIT_IO_FEED_NAME = os.getenv("ADAFRUIT_IO_FEED_NAME")
+ADAFRUIT_IO_MOOD_FEED_NAME = os.getenv("ADAFRUIT_IO_MOOD_FEED_NAME")
+ADAFRUIT_IO_TEMP_FEED_NAME = os.getenv("ADAFRUIT_IO_TEMP_FEED_NAME")
+ADAFRUIT_IO_HUMID_FEED_NAME = os.getenv("ADAFRUIT_IO_HUMID_FEED_NAME")
 
 def connected(client):
-  print('Connected to Adafruit IO!  Listening for %s changes...' % ADAFRUIT_IO_FEED_NAME)
-  client.subscribe(ADAFRUIT_IO_FEED_NAME)
+  print('Connected to Adafruit IO! Listening for feed changes...')
+  client.subscribe(ADAFRUIT_IO_MOOD_FEED_NAME)
+  client.subscribe(ADAFRUIT_IO_TEMP_FEED_NAME)
+  client.subscribe(ADAFRUIT_IO_HUMID_FEED_NAME)
 
 def disconnected(client):
   print('Disconnected from Adafruit IO!')
@@ -45,7 +50,12 @@ def pressed(x):
     lcd.clear()
     lcd.write_string('pressed %s' % i)
     print('button %s pressed!' % i)
-    client.publish(ADAFRUIT_IO_FEED_NAME, button_values[i])
+    client.publish(ADAFRUIT_IO_MOOD_FEED_NAME, button_values[i])
+
+    humidity,temperature = dht.read_retry(dht.DHT22, 4)
+    client.publish(ADAFRUIT_IO_TEMP_FEED_NAME, termperature)
+    client.publish(ADAFRUIT_IO_HUMID_FEED_NAME, humidity)
+
     GPIO.output(led_pins[i], True)
     Timer(1, light_off, args=[i]).start()
 
