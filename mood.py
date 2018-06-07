@@ -1,5 +1,6 @@
-import RPi.GPIO as GPIO
+import os
 import time
+import RPi.GPIO as GPIO
 from RPLCD.i2c import CharLCD
 from Adafruit_IO import MQTTClient
 from dotenv import load_dotenv
