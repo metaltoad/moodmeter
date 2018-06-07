@@ -52,12 +52,13 @@ def pressed(x):
     print('button %s pressed!' % i)
     client.publish(ADAFRUIT_IO_MOOD_FEED_NAME, button_values[i])
 
+    GPIO.output(led_pins[i], True)
+    Timer(1, light_off, args=[i]).start()
+    
     humidity,temperature = dht.read_retry(dht.DHT22, 4)
     client.publish(ADAFRUIT_IO_TEMP_FEED_NAME, temperature)
     client.publish(ADAFRUIT_IO_HUMID_FEED_NAME, humidity)
 
-    GPIO.output(led_pins[i], True)
-    Timer(1, light_off, args=[i]).start()
 
 led_pins = 23, 12, 20, 19
 button_pins = 24, 16, 21, 26
