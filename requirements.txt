@@ -1,3 +1,4 @@
 adafruit-io
 python-dotenv
 RPLCD
+pyowm
